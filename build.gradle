@@ -13,9 +13,14 @@ buildscript {
 }
 
 allprojects {
+    apply plugin: 'idea'
     repositories {
         jcenter()
+        mavenCentral()
     }
+}
+
+dependencies {
 }
 
 task clean(type: Delete) {

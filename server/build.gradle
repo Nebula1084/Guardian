@@ -1,12 +1,30 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.6.RELEASE")
+    }
+}
+
 
 apply plugin: 'java'
+apply plugin: 'org.springframework.boot'
 
 sourceCompatibility = 1.8
 
-repositories {
-    mavenCentral()
+jar {
+    baseName = 'guardian-server'
+    version =  '1.0.0'
 }
 
 dependencies {
+    compile 'org.springframework.boot:spring-boot-starter'
+    compile 'org.springframework.boot:spring-boot-starter-data-jpa'
+    compile 'org.postgresql:postgresql:42.1.4'
+
+    compile project(':common')
+
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }

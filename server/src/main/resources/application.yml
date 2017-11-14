@@ -1,0 +1,30 @@
+spring:
+  profiles:
+    active: dev
+  datasource:
+    driverClassName: org.postgresql.Driver
+    username: postgres
+    password: Haijiewen1
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    generate-ddl: false
+
+---
+
+spring:
+  profiles: prod
+  datasource:
+    url: jdbc:postgresql://db:5432/postgres
+
+---
+
+spring:
+  profiles: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
