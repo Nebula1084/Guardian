@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Alert Level">
+
+        <android.support.v7.preference.SwitchPreferenceCompat
+                android:key="unknown_call"
+                android:title="all unknown call"
+                android:summary="number are not from the phone book"
+                android:defaultValue="true"/>
+
+        <android.support.v7.preference.SwitchPreferenceCompat
+                android:key="high_frequency_call"
+                android:title="high frequency call"
+                android:summary="number have high frequency in call"
+                android:defaultValue="false"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Block Mode">
+        <android.support.v7.preference.SwitchPreferenceCompat
+                android:key="unknown_call"
+                android:title="all unknown call"
+                android:summary="number are not from the phone book"
+                android:defaultValue="true"/>
+
+        <android.support.v7.preference.SwitchPreferenceCompat
+                android:key="high_frequency_call"
+                android:title="high frequency call"
+                android:summary="number have high frequency in call"
+                android:defaultValue="false"/>
+        <android.support.v7.preference.SwitchPreferenceCompat
+                android:key="repeated_call"
+                android:title="repeated call"
+                android:summary="same number called within in 5 minutes, second one not be block."
+                android:defaultValue="false"/>
+    </PreferenceCategory>
+</PreferenceScreen>
