@@ -3,9 +3,11 @@ package hku.cs.smp.guardian.common.protocol;
 import io.netty.buffer.ByteBuf;
 
 import java.util.Locale;
+import java.util.Map;
 
 public class InquiryResponse extends Response {
     private int rejectNumber;
+    private Map<String, Integer> result;
 
     InquiryResponse() {
 
@@ -44,5 +46,9 @@ public class InquiryResponse extends Response {
                 "InquiryResponse[seqNo:%d, rejectNumber:%d]",
                 super.seqNo, this.rejectNumber
         );
+    }
+
+    public void setResult(Map<String, Integer> result) {
+        this.result = result;
     }
 }

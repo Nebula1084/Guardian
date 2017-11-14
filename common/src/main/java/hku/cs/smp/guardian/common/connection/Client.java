@@ -10,6 +10,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.reactivex.functions.Consumer;
 import io.reactivex.processors.PublishProcessor;
 
 import java.util.HashMap;
@@ -23,21 +24,24 @@ public class Client {
     private Map<Integer, Request> requests;
     private EventLoopGroup group;
 
-    interface Handler {
+    public interface Handler {
         void handle(Request request, Response response);
     }
 
     public Client() {
         seqNo = 0;
         messageProcessor = PublishProcessor.create();
-        handlers = new HashMap<>();
-        requests = new HashMap<>();
-        messageProcessor.subscribe(message -> {
-            int seqNo = message.getSeqNo();
-            synchronized (this) {
-                handlers.get(seqNo).handle(requests.get(seqNo), (Response) message);
-                handlers.remove(seqNo);
-                requests.remove(seqNo);
+        handlers = new HashMap<Integer, Handler>();
+        requests = new HashMap<Integer, Request>();
+        messageProcessor.subscribe(new Consumer<Message>() {
+            @Override
+            public void accept(Message message) throws Exception {
+                int seqNo = message.getSeqNo();
+                synchronized (this) {
+                    handlers.get(seqNo).handle(requests.get(seqNo), (Response) message);
+                    handlers.remove(seqNo);
+                    requests.remove(seqNo);
+                }
             }
         });
     }
@@ -55,12 +59,15 @@ public class Client {
             ChannelFuture channelFuture = bootstrap.connect(host, port);
             channel = channelFuture.sync().channel();
 
-            new Thread(() -> {
-                try {
-                    channel.closeFuture().sync();
-                } catch (InterruptedException e) {
-                    group.shutdownGracefully();
-                    e.printStackTrace();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        channel.closeFuture().sync();
+                    } catch (InterruptedException e) {
+                        group.shutdownGracefully();
+                        e.printStackTrace();
+                    }
                 }
             }).start();
 

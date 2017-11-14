@@ -22,6 +22,7 @@ import hku.cs.smp.guardian.config.ConfigFragment;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.Manifest.permission.INTERNET;
 import static android.Manifest.permission.READ_CALL_LOG;
 
 public class MainActivity extends AppCompatActivity {
@@ -46,19 +47,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void mayRequestContacts() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
-                if (shouldShowRequestPermissionRationale(READ_CALL_LOG)) {
-                    Snackbar.make(viewPager, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
-                            .setAction(android.R.string.ok, new View.OnClickListener() {
-                                @Override
-                                @TargetApi(Build.VERSION_CODES.M)
-                                public void onClick(View v) {
-                                    requestPermissions(new String[]{READ_CALL_LOG}, BLOCK_LIST_REQUEST_CODE);
-                                }
-                            });
-                } else {
-                    requestPermissions(new String[]{READ_CALL_LOG}, BLOCK_LIST_REQUEST_CODE);
-                }
+            if (checkSelfPermission(READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED ||
+                    checkSelfPermission(INTERNET) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{READ_CALL_LOG, INTERNET}, BLOCK_LIST_REQUEST_CODE);
                 return;
             }
         }
@@ -70,11 +61,15 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case BLOCK_LIST_REQUEST_CODE:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    initFragments();
-                } else {
-                    finish();
+                if (grantResults.length >= 2) {
+                    for (int grantResult : grantResults) {
+                        if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                            finish();
+                            return;
+                        }
+                    }
                 }
+                initFragments();
                 break;
         }
     }

@@ -14,9 +14,31 @@ apply plugin: 'org.springframework.boot'
 
 sourceCompatibility = 1.8
 
+sourceSets {
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integrationTest/java')
+        }
+        resources.srcDir file('src/integrationTest/resources')
+    }
+}
+
+configurations {
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
+}
+
 jar {
     baseName = 'guardian-server'
-    version =  '1.0.0'
+    version = '1.0.0'
+}
+
+task integrationTest(type: Test) {
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    reports.html.destination = file("${reporting.baseDir}/${name}")
 }
 
 dependencies {
@@ -27,4 +49,5 @@ dependencies {
     compile project(':common')
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile 'org.springframework.boot:spring-boot-starter-test'
 }

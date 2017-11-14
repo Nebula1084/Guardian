@@ -1,5 +1,6 @@
 package hku.cs.smp.guardian.common.protocol;
 
+import io.reactivex.functions.Consumer;
 import io.reactivex.subscribers.TestSubscriber;
 import org.junit.Assert;
 import org.junit.Test;
@@ -9,16 +10,20 @@ public class InquiryProtocolTest extends ProtocolTest {
 
     @Test
     public void testRequestResolve() {
-        TestSubscriber<Message> subscriber = new TestSubscriber<>();
+        TestSubscriber<Message> subscriber = new TestSubscriber<Message>();
         serverProcessor.subscribe(subscriber);
         subscriber.assertSubscribed();
         final String prefix = "178388542";
-        serverProcessor.subscribe(message -> {
-            InquiryRequest request = (InquiryRequest) message;
-            try {
-                Assert.assertEquals(request.getPhoneNumber(), prefix + request.getSeqNo());
-            } catch (Throwable e) {
-                serverProcessor.onError(e);
+        serverProcessor.subscribe(new Consumer<Message>() {
+            @Override
+            public void accept(Message message) throws Exception {
+
+                InquiryRequest request = (InquiryRequest) message;
+                try {
+                    Assert.assertEquals(request.getPhoneNumber(), prefix + request.getSeqNo());
+                } catch (Throwable e) {
+                    serverProcessor.onError(e);
+                }
             }
         });
 
@@ -39,16 +44,20 @@ public class InquiryProtocolTest extends ProtocolTest {
 
     @Test
     public void testResponseResolve() {
-        TestSubscriber<Message> subscriber = new TestSubscriber<>();
+        TestSubscriber<Message> subscriber = new TestSubscriber<Message>();
         clientProcessor.subscribe(subscriber);
         subscriber.assertSubscribed();
 
-        clientProcessor.subscribe(message -> {
-            InquiryResponse response = (InquiryResponse) message;
-            try {
-                Assert.assertEquals(response.getSeqNo() + 12, response.getRejectNumber());
-            } catch (Throwable e) {
-                clientProcessor.onError(e);
+        clientProcessor.subscribe(new Consumer<Message>() {
+            @Override
+            public void accept(Message message) throws Exception {
+
+                InquiryResponse response = (InquiryResponse) message;
+                try {
+                    Assert.assertEquals(response.getSeqNo() + 12, response.getRejectNumber());
+                } catch (Throwable e) {
+                    clientProcessor.onError(e);
+                }
             }
         });
 

@@ -1,8 +1,7 @@
 package hku.cs.smp.guardian.common.connection;
 
-import hku.cs.smp.guardian.common.protocol.InquiryRequest;
-import hku.cs.smp.guardian.common.protocol.InquiryResponse;
-import hku.cs.smp.guardian.common.protocol.TagRequest;
+import hku.cs.smp.guardian.common.protocol.*;
+import io.reactivex.functions.Consumer;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -45,23 +44,33 @@ public class IntegrateTest {
     @BeforeClass
     public static void setupServer() throws InterruptedException {
 
-        new Thread(() -> {
-            Server server = new Server();
-            server.ofType(TagRequest.class).subscribe(m -> {
-                logger.info("server[t] " + m);
-                m.response(m.getResponse());
-            });
-            server.ofType(InquiryRequest.class).subscribe(m -> {
-                InquiryResponse ir = m.getResponse();
-                ir.setRejectNumber(m.getSeqNo());
-                logger.info("server[i] " + m);
-                m.response(ir);
-            });
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Server server = new Server();
+                server.ofType(TagRequest.class).subscribe(new Consumer<TagRequest>() {
+                    @Override
+                    public void accept(TagRequest m) throws Exception {
+                        logger.info("server[t] " + m);
+                        m.response(m.getResponse());
+                    }
+                });
+                server.ofType(InquiryRequest.class).subscribe(new Consumer<InquiryRequest>() {
+                    @Override
+                    public void accept(InquiryRequest m) throws Exception {
 
-            try {
-                server.run(8080);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                        InquiryResponse ir = m.getResponse();
+                        ir.setRejectNumber(m.getSeqNo());
+                        logger.info("server[i] " + m);
+                        m.response(ir);
+                    }
+                });
+
+                try {
+                    server.run(8080);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }).start();
 
@@ -76,20 +85,23 @@ public class IntegrateTest {
     @Test(timeout = 5000)
     public void testTag() throws InterruptedException {
 
-        Counter counter = new Counter();
+        final Counter counter = new Counter();
 
         client.connect("0.0.0.0", 8080);
 
-        Client.Handler handler = (request, response) -> {
-            Assert.assertEquals(request.getSeqNo(), response.getSeqNo());
-            counter.done();
+        Client.Handler handler = new Client.Handler() {
+            @Override
+            public void handle(Request request, Response response) {
+                Assert.assertEquals(request.getSeqNo(), response.getSeqNo());
+                counter.done();
+            }
         };
 
         for (int i = 0; i < 10; i++) {
             counter.add();
             client.post(new InquiryRequest("123"), handler);
             counter.add();
-            client.post(new TagRequest("A"), handler);
+            client.post(new TagRequest("123" + i, "A"), handler);
         }
 
         counter.check();
