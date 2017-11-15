@@ -1,13 +1,10 @@
 package hku.cs.smp.guardian;
 
-import android.annotation.TargetApi;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -15,8 +12,9 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
 import hku.cs.smp.guardian.block.BlockFragment;
+import hku.cs.smp.guardian.block.ContactsHelper;
+import hku.cs.smp.guardian.buffer.TagHelper;
 import hku.cs.smp.guardian.config.ConfigFragment;
 
 import java.util.ArrayList;
@@ -24,6 +22,7 @@ import java.util.List;
 
 import static android.Manifest.permission.INTERNET;
 import static android.Manifest.permission.READ_CALL_LOG;
+import static android.Manifest.permission.READ_CONTACTS;
 
 public class MainActivity extends AppCompatActivity {
     private BottomNavigationView navigation;
@@ -37,19 +36,20 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        viewPager = (ViewPager) findViewById(R.id.container);
+        viewPager = findViewById(R.id.container);
 
-        navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        navigation = findViewById(R.id.navigation);
 
-        mayRequestContacts();
+        mayRequestPermission();
     }
 
 
-    private void mayRequestContacts() {
+    private void mayRequestPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED ||
-                    checkSelfPermission(INTERNET) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{READ_CALL_LOG, INTERNET}, BLOCK_LIST_REQUEST_CODE);
+                    checkSelfPermission(INTERNET) != PackageManager.PERMISSION_GRANTED ||
+                    checkSelfPermission(READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{READ_CALL_LOG, INTERNET, READ_CONTACTS}, BLOCK_LIST_REQUEST_CODE);
                 return;
             }
         }
@@ -61,13 +61,18 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case BLOCK_LIST_REQUEST_CODE:
-                if (grantResults.length >= 2) {
+                if (grantResults.length >= 3) {
                     for (int grantResult : grantResults) {
                         if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                            Log.i("RR", "Really?");
                             finish();
                             return;
                         }
                     }
+                } else {
+                    Log.i("R", "Really?");
+                    finish();
+                    return;
                 }
                 initFragments();
                 break;
@@ -75,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initFragments() {
+        TagHelper.init(getApplicationContext());
+        ContactsHelper.init(getApplicationContext());
         pagerAdapter = new PagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(pagerAdapter);
         navigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {

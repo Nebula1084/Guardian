@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf;
 
 import java.util.Locale;
 import java.util.Objects;
-import java.util.logging.Logger;
 
 public class TagRequest extends Request {
     private String phone;

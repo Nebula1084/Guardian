@@ -1,21 +1,20 @@
 package hku.cs.smp.guardian.block;
 
+import android.app.Service;
 import android.content.Context;
 import android.database.Cursor;
+import android.os.Build;
 import android.provider.CallLog;
-import android.util.Log;
+import android.telephony.PhoneNumberUtils;
+import android.telephony.TelephonyManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 import hku.cs.smp.guardian.R;
-import hku.cs.smp.guardian.common.connection.Client;
-import hku.cs.smp.guardian.common.protocol.Request;
-import hku.cs.smp.guardian.common.protocol.Response;
-import hku.cs.smp.guardian.common.protocol.TagRequest;
+import hku.cs.smp.guardian.buffer.TagHelper;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -23,12 +22,15 @@ import java.util.Date;
 import java.util.Locale;
 
 public class BlockAdapter extends CursorAdapter {
-    private Client client;
+    private TagHelper tagHelper;
+    private ContactsHelper contactsHelper;
+    private TelephonyManager telephonyManager;
 
     public BlockAdapter(Context context, Cursor c) {
         super(context, c, false);
-        client = new Client();
-        client.connect("192.168.0.105", 8000);
+        tagHelper = TagHelper.getInstance();
+        contactsHelper = ContactsHelper.getInstance();
+        telephonyManager = (TelephonyManager) context.getSystemService(Service.TELEPHONY_SERVICE);
     }
 
     @Override
@@ -42,27 +44,34 @@ public class BlockAdapter extends CursorAdapter {
         viewHolder.tag.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                client.post(new TagRequest(viewHolder.number.getText().toString(), "12"),
-                        new Client.Handler() {
-                            @Override
-                            public void handle(Request request, Response response) {
-                                Log.i("S", "Success!!!");
-                            }
-                        });
+                tagHelper.write(viewHolder.number.getText().toString(), "12");
             }
         });
+
+        String number = cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            number = PhoneNumberUtils.formatNumber(number, telephonyManager.getSimCountryIso().toUpperCase());
+        } else {
+            number = PhoneNumberUtils.formatNumber(number);
+        }
+
+        String date = cursor.getString(cursor.getColumnIndex(CallLog.Calls.DATE));
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        String name = contactsHelper.findNameByNumber(number);
+        if (name != null) {
+            viewHolder.number.setText(name);
+            viewHolder.tag.setVisibility(View.INVISIBLE);
+        } else
+            viewHolder.number.setText(number);
+        viewHolder.date.setText(format.format(new Date(Long.valueOf(date))));
+
         view.setTag(viewHolder);
         return view;
     }
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        ViewHolder viewHolder = (ViewHolder) view.getTag();
-        String number = cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER));
-        String date = cursor.getString(cursor.getColumnIndex(CallLog.Calls.DATE));
-        DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        viewHolder.number.setText(number);
-        viewHolder.date.setText(format.format(new Date(Long.valueOf(date))));
+
     }
 
     class ViewHolder {
@@ -71,9 +80,5 @@ public class BlockAdapter extends CursorAdapter {
         Button tag;
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        client.shutdown();
-    }
+
 }

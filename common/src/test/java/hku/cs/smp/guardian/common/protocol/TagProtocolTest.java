@@ -10,7 +10,7 @@ public class TagProtocolTest extends ProtocolTest {
     @Test
     public void testRequestResolve() {
 
-        TestSubscriber<Message> subscriber = new TestSubscriber<Message>();
+        TestSubscriber<Message> subscriber = new TestSubscriber<>();
         serverProcessor.subscribe(subscriber);
         subscriber.assertSubscribed();
         final String prefix = "tag prefix";
@@ -45,7 +45,7 @@ public class TagProtocolTest extends ProtocolTest {
 
     @Test
     public void testResponseResolve() {
-        TestSubscriber<Message> subscriber = new TestSubscriber<Message>();
+        TestSubscriber<Message> subscriber = new TestSubscriber<>();
         clientProcessor.subscribe(subscriber);
         subscriber.assertSubscribed();
         clientProcessor.subscribe(new Consumer<Message>() {
