@@ -5,6 +5,9 @@ import io.reactivex.subscribers.TestSubscriber;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class InquiryProtocolTest extends ProtocolTest {
 
 
@@ -53,8 +56,12 @@ public class InquiryProtocolTest extends ProtocolTest {
             public void accept(Message message) throws Exception {
 
                 InquiryResponse response = (InquiryResponse) message;
+                Map<String, Integer> result = response.getResult();
+                Assert.assertEquals(result.size(), response.getSeqNo());
                 try {
-                    Assert.assertEquals(response.getSeqNo() + 12, response.getRejectNumber());
+                    for (Integer i = 0; i < response.getSeqNo(); i++) {
+                        Assert.assertEquals(result.get(String.valueOf(i)), i);
+                    }
                 } catch (Throwable e) {
                     clientProcessor.onError(e);
                 }
@@ -66,7 +73,11 @@ public class InquiryProtocolTest extends ProtocolTest {
         for (int i = 0; i < num; i++) {
             InquiryResponse response = new InquiryResponse();
             response.setSeqNo(i);
-            response.setRejectNumber(i + 12);
+            Map<String, Integer> result = new HashMap<>();
+            for (int j = 0; j < i; j++)
+                result.put(String.valueOf(j), j);
+
+            response.setResult(result);
             serverChannel.writeOutbound(response);
             clientChannel.writeInbound(serverChannel.readOutbound());
         }

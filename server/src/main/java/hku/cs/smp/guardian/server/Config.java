@@ -32,7 +32,6 @@ public class Config {
             Map<String, Integer> result = callsService.inquiry(message.getPhoneNumber());
             InquiryResponse response = message.getResponse();
             response.setResult(result);
-            response.setRejectNumber(123);
             message.response(response);
         });
         return server;

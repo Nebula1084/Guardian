@@ -27,7 +27,7 @@ public class InquiryRequest extends Request {
     @Override
     public void encode(ByteBuf out) {
         out.writeByte(Message.INQUIRY_REQUEST);
-        out.writeShort(4 + phoneNumber.length());
+        out.writeShort(length() - 3);
         out.writeInt(super.seqNo);
         out.writeBytes(phoneNumber.getBytes());
     }

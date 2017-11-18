@@ -7,6 +7,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public class IntegrateTest {
@@ -60,7 +62,10 @@ public class IntegrateTest {
                     public void accept(InquiryRequest m) throws Exception {
 
                         InquiryResponse ir = m.getResponse();
-                        ir.setRejectNumber(m.getSeqNo());
+                        Map<String, Integer> result=new HashMap<>();
+                        result.put("12", 12);
+                        result.put("1a2", 1221);
+                        ir.setResult(result);
                         logger.info("server[i] " + m);
                         m.response(ir);
                     }
