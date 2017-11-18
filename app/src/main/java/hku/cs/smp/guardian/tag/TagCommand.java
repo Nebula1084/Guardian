@@ -1,4 +1,4 @@
-package hku.cs.smp.guardian.buffer;
+package hku.cs.smp.guardian.tag;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
@@ -16,9 +16,13 @@ public class TagCommand {
     @ColumnInfo(name = "tag")
     public String tag;
 
+    @ColumnInfo(name = "uploaded")
+    public Boolean uploaded;
+
     public TagCommand(String phone, String tag) {
         this.phone = phone;
         this.tag = tag;
+        this.uploaded = false;
     }
 
     TagRequest toTagRequest() {

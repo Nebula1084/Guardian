@@ -53,10 +53,6 @@ public class BlockFragment extends Fragment implements LoaderManager.LoaderCallb
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        for (String name : data.getColumnNames()) {
-            System.out.println(name);
-        }
-        System.out.println(data.getCount());
         adapter.changeCursor(data);
     }
 

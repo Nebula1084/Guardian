@@ -1,4 +1,4 @@
-package hku.cs.smp.guardian.buffer;
+package hku.cs.smp.guardian.tag;
 
 import android.arch.persistence.room.Room;
 import android.content.Context;
@@ -40,6 +40,19 @@ public class TagHelper {
 
     public List<TagCommand> read() {
         return dataBase.tagDao().getAll();
+    }
+
+    public boolean isTagged(String phone) {
+        return dataBase.tagDao().isTagged(phone);
+    }
+
+    public List<TagCommand> getByUploaded(Boolean uploaded) {
+        return dataBase.tagDao().getByUploaded(uploaded);
+    }
+
+
+    public void update(TagCommand command) {
+        dataBase.tagDao().update(command);
     }
 
     public void delete(TagCommand command) {

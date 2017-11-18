@@ -31,8 +31,8 @@ public class Client {
     public Client() {
         seqNo = 0;
         messageProcessor = PublishProcessor.create();
-        handlers = new HashMap<Integer, Handler>();
-        requests = new HashMap<Integer, Request>();
+        handlers = new HashMap<>();
+        requests = new HashMap<>();
         messageProcessor.subscribe(new Consumer<Message>() {
             @Override
             public void accept(Message message) throws Exception {
@@ -74,7 +74,6 @@ public class Client {
         } catch (InterruptedException e) {
             e.printStackTrace();
             group.shutdownGracefully();
-            System.out.println("Shutdown Client");
         }
 
     }

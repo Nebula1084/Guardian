@@ -26,7 +26,6 @@ public class ContactsHelper {
 
     public String findNameByNumber(String number) {
 
-
         Cursor cursor = resolver.query(
                 ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                 new String[]{

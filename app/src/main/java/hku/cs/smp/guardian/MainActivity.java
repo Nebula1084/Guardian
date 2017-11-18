@@ -14,7 +14,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import hku.cs.smp.guardian.block.BlockFragment;
 import hku.cs.smp.guardian.block.ContactsHelper;
-import hku.cs.smp.guardian.buffer.TagHelper;
+import hku.cs.smp.guardian.tag.TagHelper;
 import hku.cs.smp.guardian.config.ConfigFragment;
 
 import java.util.ArrayList;
