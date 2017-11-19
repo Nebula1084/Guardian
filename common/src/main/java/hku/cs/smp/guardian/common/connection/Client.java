@@ -4,15 +4,15 @@ import hku.cs.smp.guardian.common.protocol.Message;
 import hku.cs.smp.guardian.common.protocol.Request;
 import hku.cs.smp.guardian.common.protocol.Response;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import io.reactivex.functions.Consumer;
 import io.reactivex.processors.PublishProcessor;
 
+import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,7 +46,7 @@ public class Client {
         });
     }
 
-    public void connect(String host, int port) {
+    public void connect(String host, int port, ChannelFutureListener closeListener) throws Exception {
         group = new NioEventLoopGroup();
         Bootstrap bootstrap = new Bootstrap();
 
@@ -58,6 +58,7 @@ public class Client {
 
             ChannelFuture channelFuture = bootstrap.connect(host, port);
             channel = channelFuture.sync().channel();
+            channel.closeFuture().addListener(closeListener);
 
             new Thread(new Runnable() {
                 @Override
@@ -71,9 +72,10 @@ public class Client {
                 }
             }).start();
 
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             group.shutdownGracefully();
+            throw e;
         }
 
     }
@@ -93,7 +95,15 @@ public class Client {
         group.shutdownGracefully();
     }
 
+    public boolean isConnected() {
+        return channel != null && channel.isActive();
+    }
+
     Channel getChannel() {
         return channel;
+    }
+
+    void addOnCloseListener(ChannelFutureListener listener) {
+        channel.closeFuture().addListener(listener);
     }
 }

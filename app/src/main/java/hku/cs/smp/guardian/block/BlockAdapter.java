@@ -2,6 +2,7 @@ package hku.cs.smp.guardian.block;
 
 import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -16,6 +17,7 @@ import android.widget.CursorAdapter;
 import android.widget.TextView;
 import hku.cs.smp.guardian.R;
 import hku.cs.smp.guardian.tag.TagHelper;
+import hku.cs.smp.guardian.tag.UploadService;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -27,16 +29,18 @@ public class BlockAdapter extends CursorAdapter {
     private TagHelper tagHelper;
     private ContactsHelper contactsHelper;
     private TelephonyManager telephonyManager;
+    private Context context;
 
     public BlockAdapter(Context context, Cursor c) {
         super(context, c, false);
+        this.context = context;
         tagHelper = TagHelper.getInstance();
         contactsHelper = ContactsHelper.getInstance();
         telephonyManager = (TelephonyManager) context.getSystemService(Service.TELEPHONY_SERVICE);
     }
 
     @Override
-    public View newView(Context context, Cursor cursor, ViewGroup parent) {
+    public View newView(final Context context, Cursor cursor, ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.block_item, parent, false);
         final ViewHolder viewHolder = new ViewHolder();
@@ -48,6 +52,7 @@ public class BlockAdapter extends CursorAdapter {
             public void onClick(View v) {
                 viewHolder.tag.setVisibility(View.INVISIBLE);
                 tagHelper.write(viewHolder.number.getText().toString(), "12");
+                context.startService(new Intent(context, UploadService.class));
             }
         });
         viewHolder.version = 0L;

@@ -1,5 +1,6 @@
 package hku.cs.smp.guardian;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import hku.cs.smp.guardian.block.BlockFragment;
 import hku.cs.smp.guardian.block.ContactsHelper;
 import hku.cs.smp.guardian.tag.TagHelper;
 import hku.cs.smp.guardian.config.ConfigFragment;
+import hku.cs.smp.guardian.tag.UploadService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +45,11 @@ public class MainActivity extends AppCompatActivity {
         mayRequestPermission();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startService(new Intent(this, UploadService.class));
+    }
 
     private void mayRequestPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

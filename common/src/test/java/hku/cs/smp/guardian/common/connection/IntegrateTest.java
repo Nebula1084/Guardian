@@ -1,5 +1,6 @@
 package hku.cs.smp.guardian.common.connection;
 
+import hku.cs.smp.guardian.common.Counter;
 import hku.cs.smp.guardian.common.protocol.*;
 import io.reactivex.functions.Consumer;
 import org.junit.Assert;
@@ -16,32 +17,6 @@ public class IntegrateTest {
 
     private static Logger logger = Logger.getLogger(IntegrateTest.class.getName());
 
-    class Counter {
-        int c;
-
-        synchronized void add() {
-            c++;
-            notifyAll();
-        }
-
-        synchronized void done() {
-            c--;
-            notifyAll();
-        }
-
-        synchronized void check() {
-            for (; ; ) {
-                if (c != 0) {
-                    try {
-                        wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                } else break;
-            }
-        }
-
-    }
 
     @BeforeClass
     public static void setupServer() throws InterruptedException {
