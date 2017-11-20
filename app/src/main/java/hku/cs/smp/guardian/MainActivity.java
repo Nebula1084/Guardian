@@ -22,9 +22,7 @@ import hku.cs.smp.guardian.tag.UploadService;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.Manifest.permission.INTERNET;
-import static android.Manifest.permission.READ_CALL_LOG;
-import static android.Manifest.permission.READ_CONTACTS;
+import static android.Manifest.permission.*;
 
 public class MainActivity extends AppCompatActivity {
     private BottomNavigationView navigation;
@@ -32,6 +30,9 @@ public class MainActivity extends AppCompatActivity {
     private PagerAdapter pagerAdapter;
 
     private static final int BLOCK_LIST_REQUEST_CODE = 11;
+
+    public final static String HOST = "192.168.0.105";
+    public final static Integer PORT = 8000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,8 +56,10 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED ||
                     checkSelfPermission(INTERNET) != PackageManager.PERMISSION_GRANTED ||
+                    checkSelfPermission(CALL_PHONE) != PackageManager.PERMISSION_GRANTED ||
+                    checkSelfPermission(READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED ||
                     checkSelfPermission(READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{READ_CALL_LOG, INTERNET, READ_CONTACTS}, BLOCK_LIST_REQUEST_CODE);
+                requestPermissions(new String[]{READ_CALL_LOG, INTERNET, CALL_PHONE, READ_PHONE_STATE, READ_CONTACTS}, BLOCK_LIST_REQUEST_CODE);
                 return;
             }
         }
@@ -68,16 +71,14 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case BLOCK_LIST_REQUEST_CODE:
-                if (grantResults.length >= 3) {
+                if (grantResults.length >= 5) {
                     for (int grantResult : grantResults) {
                         if (grantResult != PackageManager.PERMISSION_GRANTED) {
-                            Log.i("RR", "Really?");
                             finish();
                             return;
                         }
                     }
                 } else {
-                    Log.i("R", "Really?");
                     finish();
                     return;
                 }

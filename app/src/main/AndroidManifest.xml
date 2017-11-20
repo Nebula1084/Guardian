@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="hku.cs.smp.guardian">
+    <uses-permission android:name="android.permission.CALL_PHONE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.READ_CALL_LOG"/>
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -23,6 +25,17 @@
         <service android:name=".tag.UploadService">
         </service>
 
+        <receiver android:name=".block.PhoneBlocker">
+            <intent-filter>
+                <action android:name="android.intent.action.PHONE_STATE"/>
+            </intent-filter>
+        </receiver>
+
+        <activity android:name=".block.AlertActivity"
+                  android:label="@string/title_alert"
+                  android:theme="@style/Theme.AppCompat.DayNight.Dialog">
+
+        </activity>
     </application>
 
 </manifest>

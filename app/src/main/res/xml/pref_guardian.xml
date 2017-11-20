@@ -3,33 +3,44 @@
     <PreferenceCategory android:title="Alert Level">
 
         <android.support.v7.preference.SwitchPreferenceCompat
-                android:key="unknown_call"
+                android:key="alert_unknown"
                 android:title="all unknown call"
                 android:summary="number are not from the phone book"
                 android:defaultValue="true"/>
 
         <android.support.v7.preference.SwitchPreferenceCompat
-                android:key="high_frequency_call"
+                android:key="alert_high_frequency"
                 android:title="high frequency call"
                 android:summary="number have high frequency in call"
                 android:defaultValue="false"/>
 
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Block Mode">
+    <PreferenceCategory android:title="Incoming Call Block">
+        <CheckBoxPreference
+                android:key="block_mode"
+                android:title="Block mode"
+                android:summary="Open block mode"
+                android:defaultValue="false"
+        />
+
         <android.support.v7.preference.SwitchPreferenceCompat
-                android:key="unknown_call"
+                android:dependency="block_mode"
+                android:key="block_unknown"
                 android:title="all unknown call"
                 android:summary="number are not from the phone book"
                 android:defaultValue="true"/>
 
         <android.support.v7.preference.SwitchPreferenceCompat
-                android:key="high_frequency_call"
+                android:dependency="block_mode"
+                android:key="block_high_frequency"
                 android:title="high frequency call"
                 android:summary="number have high frequency in call"
                 android:defaultValue="false"/>
+
         <android.support.v7.preference.SwitchPreferenceCompat
-                android:key="repeated_call"
+                android:dependency="block_mode"
+                android:key="block_repeated_call"
                 android:title="repeated call"
                 android:summary="same number called within in 5 minutes, second one not be block."
                 android:defaultValue="false"/>

@@ -14,9 +14,10 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import static hku.cs.smp.guardian.MainActivity.HOST;
+import static hku.cs.smp.guardian.MainActivity.PORT;
+
 public class UploadService extends Service {
-    private final static String HOST = "147.8.237.150";
-    private final static Integer PORT = 8000;
 
     private Client client;
     private TagHelper tagHelper;
