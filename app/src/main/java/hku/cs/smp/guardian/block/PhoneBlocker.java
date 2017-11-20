@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.provider.ContactsContract;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import com.android.internal.telephony.ITelephony;
 import hku.cs.smp.guardian.common.Counter;
 import hku.cs.smp.guardian.common.connection.Client;
@@ -54,7 +53,6 @@ public class PhoneBlocker extends BroadcastReceiver {
                         if (block()) return;
                 }
 
-                Log.i("Block unknown", String.valueOf(configHolder.shouldAlertUnknown()));
                 if (configHolder.shouldAlertUnknown() && isUnknown(number)) {
                     alert();
                     return;
@@ -76,8 +74,9 @@ public class PhoneBlocker extends BroadcastReceiver {
 
     private void alert() {
         Intent intent = new Intent(context, AlertActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.putExtra("count", 1);
         context.startActivity(intent);
     }
 
@@ -111,7 +110,6 @@ public class PhoneBlocker extends BroadcastReceiver {
                 ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " DESC"
         );
         boolean ret = !cursor.moveToFirst();
-        Log.i("isUnknown", String.valueOf(ret));
         cursor.close();
         return ret;
     }
