@@ -11,12 +11,11 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MenuItem;
 import hku.cs.smp.guardian.block.BlockFragment;
 import hku.cs.smp.guardian.block.ContactsHelper;
-import hku.cs.smp.guardian.tag.TagHelper;
 import hku.cs.smp.guardian.config.ConfigFragment;
+import hku.cs.smp.guardian.tag.TagHelper;
 import hku.cs.smp.guardian.tag.UploadService;
 
 import java.util.ArrayList;

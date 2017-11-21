@@ -4,9 +4,11 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.provider.CallLog;
+import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.view.LayoutInflater;
@@ -14,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CursorAdapter;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import hku.cs.smp.guardian.R;
 import hku.cs.smp.guardian.tag.TagHelper;
@@ -55,6 +58,13 @@ public class BlockAdapter extends CursorAdapter {
                 context.startService(new Intent(context, UploadService.class));
             }
         });
+        viewHolder.add = view.findViewById(R.id.add);
+        viewHolder.add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addNewContact(viewHolder.number.getText().toString());
+            }
+        });
         viewHolder.version = 0L;
 
         view.setTag(viewHolder);
@@ -83,6 +93,7 @@ public class BlockAdapter extends CursorAdapter {
         TextView number;
         TextView date;
         Button tag;
+        ImageButton add;
         Long version;
     }
 
@@ -129,4 +140,13 @@ public class BlockAdapter extends CursorAdapter {
         }
     }
 
+    private void addNewContact(String number) {
+        Intent intent = new Intent(Intent.ACTION_INSERT, Uri.withAppendedPath(Uri.parse("content://com.android.contacts"), "contacts"));
+        intent.setType("vnd.android.cursor.dir/person");
+        intent.setType("vnd.android.cursor.dir/contact");
+        intent.setType("vnd.android.cursor.dir/raw_contact");
+        intent.putExtra(android.provider.ContactsContract.Intents.Insert.PHONE, number);
+
+        context.startActivity(intent);
+    }
 }

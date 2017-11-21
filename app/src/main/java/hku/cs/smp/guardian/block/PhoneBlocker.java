@@ -5,7 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.Build;
 import android.provider.ContactsContract;
+import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import com.android.internal.telephony.ITelephony;
 import hku.cs.smp.guardian.common.Counter;
@@ -15,6 +17,7 @@ import hku.cs.smp.guardian.common.protocol.InquiryResponse;
 import hku.cs.smp.guardian.common.protocol.Request;
 import hku.cs.smp.guardian.common.protocol.Response;
 import hku.cs.smp.guardian.config.ConfigHolder;
+import hku.cs.smp.guardian.tag.TagResult;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 
@@ -25,12 +28,16 @@ import java.util.Map;
 
 import static hku.cs.smp.guardian.MainActivity.HOST;
 import static hku.cs.smp.guardian.MainActivity.PORT;
+import static hku.cs.smp.guardian.block.AlertActivity.COUNT;
+import static hku.cs.smp.guardian.block.AlertActivity.TAGS;
+import static hku.cs.smp.guardian.block.AlertActivity.UNKNOWN;
 
 public class PhoneBlocker extends BroadcastReceiver {
     private TelephonyManager telephonyManager;
     private ConfigHolder configHolder;
     private Context context;
     private Counter counter = new Counter();
+    private TagResult result = null;
     private ChannelFutureListener closeListener = new ChannelFutureListener() {
         @Override
         public void operationComplete(ChannelFuture future) throws Exception {
@@ -46,6 +53,12 @@ public class PhoneBlocker extends BroadcastReceiver {
         switch (telephonyManager.getCallState()) {
             case TelephonyManager.CALL_STATE_RINGING:
                 String number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    number = PhoneNumberUtils.formatNumber(number, telephonyManager.getSimCountryIso().toUpperCase());
+                } else {
+                    number = PhoneNumberUtils.formatNumber(number);
+                }
+
                 if (configHolder.isBlockMode()) {
                     if (configHolder.shouldBlockUnknown() && isUnknown(number))
                         if (block()) return;
@@ -76,7 +89,10 @@ public class PhoneBlocker extends BroadcastReceiver {
         Intent intent = new Intent(context, AlertActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        intent.putExtra("count", 1);
+        intent.putExtra(COUNT, 1);
+        intent.putExtra(UNKNOWN, false);
+        intent.putExtra(TAGS, result);
+
         context.startActivity(intent);
     }
 
@@ -124,8 +140,8 @@ public class PhoneBlocker extends BroadcastReceiver {
             counter.done();
         }
 
-        public Map<String, Integer> getResult() {
-            return result;
+        TagResult getResult() {
+            return new TagResult(result);
         }
     }
 
@@ -139,8 +155,10 @@ public class PhoneBlocker extends BroadcastReceiver {
             client.post(new InquiryRequest(number), handler);
             client.shutdown();
             counter.check();
-            if (!handler.getResult().isEmpty())
+            if (!handler.getResult().isEmpty()) {
+                this.result = handler.getResult();
                 return true;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
