@@ -44,9 +44,9 @@ public class BlockFragment extends Fragment implements LoaderManager.LoaderCallb
                         CallLog.Calls.NUMBER,
                         CallLog.Calls.DATE,
                 },
-                CallLog.Calls.TYPE + " = ?",
+                CallLog.Calls.TYPE + " != ?",
                 new String[]{
-                        String.valueOf(CallLog.Calls.INCOMING_TYPE)
+                        String.valueOf(CallLog.Calls.OUTGOING_TYPE)
                 },
                 CallLog.Calls.DEFAULT_SORT_ORDER);
     }

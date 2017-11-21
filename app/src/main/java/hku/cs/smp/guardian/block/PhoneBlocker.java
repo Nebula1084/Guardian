@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Build;
+import android.provider.CallLog;
 import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
@@ -23,14 +24,13 @@ import io.netty.channel.ChannelFutureListener;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 import static hku.cs.smp.guardian.MainActivity.HOST;
 import static hku.cs.smp.guardian.MainActivity.PORT;
-import static hku.cs.smp.guardian.block.AlertActivity.COUNT;
-import static hku.cs.smp.guardian.block.AlertActivity.TAGS;
-import static hku.cs.smp.guardian.block.AlertActivity.UNKNOWN;
+import static hku.cs.smp.guardian.block.AlertActivity.*;
 
 public class PhoneBlocker extends BroadcastReceiver {
     private TelephonyManager telephonyManager;
@@ -53,6 +53,7 @@ public class PhoneBlocker extends BroadcastReceiver {
         switch (telephonyManager.getCallState()) {
             case TelephonyManager.CALL_STATE_RINGING:
                 String number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
+                String rawNumber = number;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     number = PhoneNumberUtils.formatNumber(number, telephonyManager.getSimCountryIso().toUpperCase());
                 } else {
@@ -61,9 +62,9 @@ public class PhoneBlocker extends BroadcastReceiver {
 
                 if (configHolder.isBlockMode()) {
                     if (configHolder.shouldBlockUnknown() && isUnknown(number))
-                        if (block()) return;
+                        if (block(rawNumber)) return;
                     if (configHolder.shouldBlockHighFrequency() && isHighFrequency(number))
-                        if (block()) return;
+                        if (block(rawNumber)) return;
                 }
 
                 if (configHolder.shouldAlertUnknown() && isUnknown(number)) {
@@ -97,7 +98,9 @@ public class PhoneBlocker extends BroadcastReceiver {
     }
 
 
-    private boolean block() {
+    private boolean block(String rawNumber) {
+        if (configHolder.isBlockRepeatedCall() && isRecent(rawNumber))
+            return true;
         Class<TelephonyManager> c = TelephonyManager.class;
         Method getITelephonyMethod;
         try {
@@ -110,6 +113,30 @@ public class PhoneBlocker extends BroadcastReceiver {
             return false;
         }
         return true;
+    }
+
+    private boolean isRecent(String rawNumber) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MINUTE, -5);
+        Cursor cursor = context.getContentResolver().query(
+                CallLog.Calls.CONTENT_URI,
+                new String[]{
+                        CallLog.Calls._ID,
+                        CallLog.Calls.CACHED_NAME,
+                        CallLog.Calls.NUMBER,
+                        CallLog.Calls.DATE,
+                },
+                CallLog.Calls.NUMBER + " = ? AND " +
+                        CallLog.Calls.DATE + " > ?",
+                new String[]{
+                        rawNumber,
+                        String.valueOf(calendar.getTimeInMillis())
+                },
+                CallLog.Calls.DEFAULT_SORT_ORDER
+        );
+        boolean ret = cursor.moveToFirst();
+        cursor.close();
+        return ret;
     }
 
     private boolean isUnknown(String number) {
