@@ -2,6 +2,7 @@ package hku.cs.smp.guardian.block;
 
 import android.app.Service;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -9,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
+import android.support.v7.app.AlertDialog;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.view.LayoutInflater;
@@ -53,9 +55,7 @@ public class BlockAdapter extends CursorAdapter {
         viewHolder.tag.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                viewHolder.tag.setVisibility(View.INVISIBLE);
-                tagHelper.write(viewHolder.number.getText().toString(), "12");
-                context.startService(new Intent(context, UploadService.class));
+                createTagDialog(viewHolder);
             }
         });
         viewHolder.add = view.findViewById(R.id.add);
@@ -128,12 +128,14 @@ public class BlockAdapter extends CursorAdapter {
                 if (name != null) {
                     viewHolder.number.setText(name);
                     viewHolder.tag.setVisibility(View.INVISIBLE);
+                    viewHolder.add.setVisibility(View.INVISIBLE);
                 } else {
                     viewHolder.number.setText(number);
                     if (isTagged)
                         viewHolder.tag.setVisibility(View.INVISIBLE);
                     else
                         viewHolder.tag.setVisibility(View.VISIBLE);
+                    viewHolder.add.setVisibility(View.VISIBLE);
                 }
                 viewHolder.date.setText(date);
             }
@@ -148,5 +150,19 @@ public class BlockAdapter extends CursorAdapter {
         intent.putExtra(android.provider.ContactsContract.Intents.Insert.PHONE, number);
 
         context.startActivity(intent);
+    }
+
+    void createTagDialog(final ViewHolder viewHolder) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Tag a number")
+                .setItems(R.array.tags, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        viewHolder.tag.setVisibility(View.INVISIBLE);
+                        tagHelper.write(viewHolder.number.getText().toString(), context.getResources().getStringArray(R.array.tags)[which]);
+                        context.startService(new Intent(context, UploadService.class));
+                    }
+                });
+        builder.create().show();
     }
 }
