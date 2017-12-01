@@ -185,6 +185,7 @@ public class PhoneBlocker extends BroadcastReceiver {
                 this.result = handler.getResult();
                 return true;
             }
+            client.shutdown();
         } catch (Exception e) {
             counter.reset();
             e.printStackTrace();
