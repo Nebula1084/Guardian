@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int BLOCK_LIST_REQUEST_CODE = 11;
 
-    public final static String HOST = "192.168.0.105";
+    public final static String HOST = "175.159.159.138";
     public final static Integer PORT = 8000;
 
     @Override

@@ -187,6 +187,7 @@ public class PhoneBlocker extends BroadcastReceiver {
                 return true;
             }
         } catch (Exception e) {
+            counter.reset();
             e.printStackTrace();
         }
         return false;

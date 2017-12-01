@@ -4,20 +4,21 @@ import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.provider.CallLog;
-import android.provider.ContactsContract;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.CursorAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import hku.cs.smp.guardian.R;
@@ -26,26 +27,24 @@ import hku.cs.smp.guardian.tag.UploadService;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 
-public class BlockAdapter extends CursorAdapter {
+public class BlockAdapter extends BaseAdapter {
     private TagHelper tagHelper;
     private ContactsHelper contactsHelper;
     private TelephonyManager telephonyManager;
     private Context context;
+    private List<Item> items;
 
-    public BlockAdapter(Context context, Cursor c) {
-        super(context, c, false);
+    public BlockAdapter(Context context) {
         this.context = context;
         tagHelper = TagHelper.getInstance();
         contactsHelper = ContactsHelper.getInstance();
         telephonyManager = (TelephonyManager) context.getSystemService(Service.TELEPHONY_SERVICE);
+        items = new ArrayList<>();
     }
 
-    @Override
-    public View newView(final Context context, Cursor cursor, ViewGroup parent) {
+    private View newView(ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.block_item, parent, false);
         final ViewHolder viewHolder = new ViewHolder();
@@ -71,25 +70,43 @@ public class BlockAdapter extends CursorAdapter {
         return view;
     }
 
-    @Override
-    public void bindView(View view, Context context, Cursor cursor) {
+    private void bindView(View view, Item item) {
         ViewHolder viewHolder = (ViewHolder) view.getTag();
-        String number = cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            number = PhoneNumberUtils.formatNumber(number, telephonyManager.getSimCountryIso().toUpperCase());
-        } else {
-            number = PhoneNumberUtils.formatNumber(number);
-        }
-
-        String date = cursor.getString(cursor.getColumnIndex(CallLog.Calls.DATE));
-        DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        date = format.format(new Date(Long.valueOf(date)));
 
         viewHolder.version += 1;
-        new UpdateView(viewHolder, number, date).execute();
+        new UpdateView(viewHolder, item).execute();
+    }
+
+    @Override
+    public int getCount() {
+        return items.size();
+    }
+
+    @Override
+    public Object getItem(int position) {
+        return items.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return items.get(position)._id;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        if (convertView == null)
+            convertView = this.newView(parent);
+        bindView(convertView, items.get(position));
+
+        return convertView;
+    }
+
+    public void setItems(List<Item> items) {
+        this.items = items;
     }
 
     class ViewHolder {
+
         TextView number;
         TextView date;
         Button tag;
@@ -97,20 +114,43 @@ public class BlockAdapter extends CursorAdapter {
         Long version;
     }
 
+    static class Item {
+        Integer _id;
+        String number;
+        String date;
+        Integer time;
+        Integer type;
+    }
+
     private class UpdateView extends AsyncTask<String, Void, Void> {
 
         private final ViewHolder viewHolder;
-        private final String number;
-        private final String date;
-        private final Long version;
+        private Item item;
+        private String number;
+        private String date;
+        private Long version;
         private String name;
         private Boolean isTagged;
 
-        UpdateView(ViewHolder viewHolder, String number, String date) {
+        UpdateView(ViewHolder viewHolder, Item item) {
             this.viewHolder = viewHolder;
-            this.number = number;
-            this.date = date;
             this.version = viewHolder.version;
+            this.item = item;
+            this.number = item.number;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                this.number = PhoneNumberUtils.formatNumber(number, telephonyManager.getSimCountryIso().toUpperCase());
+            } else {
+                this.number = PhoneNumberUtils.formatNumber(number);
+            }
+
+            Date date = new Date(Long.valueOf(item.date));
+            DateFormat format;
+
+            if (!DateUtils.isToday(date.getTime()))
+                format = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            else
+                format = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+            this.date = format.format(date);
         }
 
         @Override
@@ -137,6 +177,10 @@ public class BlockAdapter extends CursorAdapter {
                         viewHolder.tag.setVisibility(View.VISIBLE);
                     viewHolder.add.setVisibility(View.VISIBLE);
                 }
+                if (item.type == CallLog.Calls.MISSED_TYPE)
+                    viewHolder.number.setTextColor(ContextCompat.getColor(context, R.color.missingCall));
+                else
+                    viewHolder.number.setTextColor(ContextCompat.getColor(context, R.color.normalCall));
                 viewHolder.date.setText(date);
             }
         }

@@ -7,12 +7,11 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.reactivex.functions.Consumer;
 import io.reactivex.processors.PublishProcessor;
 
-import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,12 +52,14 @@ public class Client {
         try {
             bootstrap.group(group)
                     .channel(NioSocketChannel.class)
+                    .handler(new LoggingHandler(LogLevel.INFO))
                     .handler(new HandlerInitializer(messageProcessor))
                     .option(ChannelOption.SO_KEEPALIVE, true);
 
             ChannelFuture channelFuture = bootstrap.connect(host, port);
             channel = channelFuture.sync().channel();
-            channel.closeFuture().addListener(closeListener);
+            if (closeListener != null)
+                channel.closeFuture().addListener(closeListener);
 
             new Thread(new Runnable() {
                 @Override

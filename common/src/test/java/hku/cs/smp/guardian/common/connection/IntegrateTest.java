@@ -37,7 +37,7 @@ public class IntegrateTest {
                     public void accept(InquiryRequest m) throws Exception {
 
                         InquiryResponse ir = m.getResponse();
-                        Map<String, Integer> result=new HashMap<>();
+                        Map<String, Integer> result = new HashMap<>();
                         result.put("12", 12);
                         result.put("1a2", 1221);
                         ir.setResult(result);
@@ -63,11 +63,11 @@ public class IntegrateTest {
     }
 
     @Test(timeout = 5000)
-    public void testTag() throws InterruptedException {
+    public void testTag() throws Exception {
 
         final Counter counter = new Counter();
 
-        client.connect("0.0.0.0", 8080);
+        client.connect("0.0.0.0", 8080, null);
 
         Client.Handler handler = new Client.Handler() {
             @Override

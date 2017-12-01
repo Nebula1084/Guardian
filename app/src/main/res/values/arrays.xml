@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="tags">
-        <item>tag_a</item>
-        <item>tag_b</item>
-        <item>tag_c</item>
-        <item>tag_d</item>
+        <item>Fraud</item>
+        <item>Promotion</item>
+        <item>Delivery</item>
     </string-array>
 </resources>
