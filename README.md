@@ -58,7 +58,7 @@ Although, the application would work just fine without server support. But
 it's necessary for some feature like uploading tag and inquiring the phone
 number.
 
-#Usage
+# Usage
 This section describe the usage of `Guardian` app.
 
 # Architecture
