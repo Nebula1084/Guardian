@@ -15,6 +15,6 @@ public class TagResult implements Serializable {
     }
 
     public boolean isEmpty() {
-        return result != null && result.isEmpty();
+        return result == null || result.isEmpty();
     }
 }

@@ -180,7 +180,6 @@ public class PhoneBlocker extends BroadcastReceiver {
             counter.add();
             InquiryHandler handler = new InquiryHandler();
             client.post(new InquiryRequest(number), handler);
-            client.shutdown();
             counter.check();
             if (!handler.getResult().isEmpty()) {
                 this.result = handler.getResult();

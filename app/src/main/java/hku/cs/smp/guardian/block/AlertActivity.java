@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
+import com.android.volley.toolbox.NetworkImageView;
 import hku.cs.smp.guardian.R;
 import hku.cs.smp.guardian.tag.TagResult;
 import lecho.lib.hellocharts.model.PieChartData;
@@ -26,23 +27,36 @@ public class AlertActivity extends AppCompatActivity {
     private static final long DELAY_INTERVAL = 2000;
     private PieChartView frequency;
     private TextView message;
+    private NetworkImageView image;
+    private TagResult tagResult;
+    private Boolean unknown;
 
     public static final String TAGS = "TAGS";
     public static final String UNKNOWN = "UNKNOWN";
     public static final String COUNT = "COUNT";
+    private static final String ALERT_IMAGE_URL = "http://i.cs.hku.hk/~twchim/police/warning.jpg";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_alert);
 
-        TagResult tagResult = (TagResult) getIntent().getSerializableExtra(TAGS);
-        Boolean unknown = getIntent().getBooleanExtra(UNKNOWN, true);
+        tagResult = (TagResult) getIntent().getSerializableExtra(TAGS);
+        unknown = getIntent().getBooleanExtra(UNKNOWN, true);
         if (tagResult == null)
             unknown = true;
 
+        if (getIntent().getIntExtra(COUNT, 0) > 0) {
+            handler.sendEmptyMessageDelayed(MSG_ID_CHECK_TOP_ACTIVITY,
+                    DELAY_INTERVAL);
+            return;
+        }
+        AlertImageLoader.init(getApplicationContext());
+
         frequency = findViewById(R.id.frequency);
         message = findViewById(R.id.alert_message);
+        image = findViewById(R.id.alert_image);
+        image.setImageUrl(ALERT_IMAGE_URL, AlertImageLoader.getInstance());
 
         PieChartData chartData = new PieChartData();
         if (!unknown) {
@@ -51,7 +65,7 @@ public class AlertActivity extends AppCompatActivity {
                 SliceValue value = new SliceValue();
                 value.setColor(Color.RED);
                 value.setValue(tag.getValue());
-                value.setLabel(tag.getKey());
+                value.setLabel(tag.getKey() + ":" + tag.getValue());
                 values.add(value);
                 chartData.setValues(values);
                 chartData.setHasLabels(true);
@@ -67,8 +81,6 @@ public class AlertActivity extends AppCompatActivity {
         Window window = getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 
-        handler.sendEmptyMessageDelayed(MSG_ID_CHECK_TOP_ACTIVITY,
-                DELAY_INTERVAL);
     }
 
     @Override
@@ -84,6 +96,8 @@ public class AlertActivity extends AppCompatActivity {
                     return;
                 Intent intent = new Intent();
                 intent.putExtra(COUNT, count - 1);
+                intent.putExtra(TAGS, tagResult);
+                intent.putExtra(UNKNOWN, unknown);
                 intent.setClass(AlertActivity.this, AlertActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 intent.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
