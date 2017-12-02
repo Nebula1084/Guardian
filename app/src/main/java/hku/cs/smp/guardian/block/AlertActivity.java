@@ -35,6 +35,7 @@ public class AlertActivity extends AppCompatActivity {
     public static final String UNKNOWN = "UNKNOWN";
     public static final String COUNT = "COUNT";
     private static final String ALERT_IMAGE_URL = "http://i.cs.hku.hk/~twchim/police/warning.jpg";
+    private static final int COLOR[] = {Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW};
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -59,11 +60,14 @@ public class AlertActivity extends AppCompatActivity {
         image.setImageUrl(ALERT_IMAGE_URL, AlertImageLoader.getInstance());
 
         PieChartData chartData = new PieChartData();
+        int color = 0;
         if (!unknown) {
             List<SliceValue> values = new ArrayList<>();
             for (Map.Entry<String, Integer> tag : tagResult.getResult().entrySet()) {
                 SliceValue value = new SliceValue();
-                value.setColor(Color.RED);
+                value.setColor(COLOR[color]);
+                color += 1;
+                color = color % COLOR.length;
                 value.setValue(tag.getValue());
                 value.setLabel(tag.getKey() + ":" + tag.getValue());
                 values.add(value);

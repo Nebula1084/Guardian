@@ -40,6 +40,7 @@ public class UploadService extends Service {
     public void onCreate() {
         super.onCreate();
         client = new Client();
+        TagHelper.init(getApplicationContext());
         tagHelper = TagHelper.getInstance();
         works = new LinkedBlockingQueue<>();
         if (uploadThread == null) {

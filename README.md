@@ -59,7 +59,17 @@ it's necessary for some feature like uploading tag and inquiring the phone
 number.
 
 # Usage
-This section describe the usage of `Guardian` app.
+## Main functions
+After downloading Guardian and opening the application in the first time, users need to grant all permissions for the application to use all functions, including permitting in reading the phone book and allowing it to receive phone calls. 
+
+After opening the application, the application would run in the background. The default alert mode is all unknown call. Once users receive an unknown call, the warning image contained information of tags would pop-up on the screen to alert users. Users can touch screen to dismiss it and return to the interface of incoming calls.
+
+After answering an unknown call, users can open application in the page of incoming calls to tag the number as Fraud, Promotion or Delivery or to add this number into contact list.
+
+## Optional functions 
+In the configuration page of application, users can choose different level of alert mode and block mode in preference. Alert mode includes all unknown call and high frequency call, which are mutual exclusion. Block mode contains all unknown call, high frequency call and repeated call.
+
+When block mode opens, the application would automatically block the proper number which would not reach to users. Users can find the blocked number in the page of incoming calls and manage it.
 
 # Architecture
 The project is composed of three modules, `client`, `common` and `server`.
